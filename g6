@@ -13,10 +13,10 @@ extern int yylex ();
 char *msg4 = "unknow entity in source program";
 
 typedef enum {
-	Variable,
-	Constant,
-	Temporary,
-	Function,
+	Variavel,
+	Constante,
+	Temporario,
+	Funcao,
 	Procedure
 } Entity;
 
