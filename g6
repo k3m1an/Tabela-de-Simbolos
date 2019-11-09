@@ -1,4 +1,4 @@
-%{
+
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,76 +10,76 @@ extern int yylex ();
 #define FRACASSO	9998
 #define ACHOUDIFVAR	9997
 
-char *msg4 = "unknow entity in source program";
+char *msg4 = "unknow Entidade in source program";
 
 typedef enum {
 	Variavel,
-	Constante,
+	Constantee,
 	Temporario,
 	Funcao,
-	Procedure
-} Entity;
+	Procedimento
+} Entidade;
 
 /*
-SymbTab: 1as 50 entradas p/ simbolos do fonte
+TabSimb: as primeiras 50 entradas p/ simbolos do fonte
 e últimas p/ as temporarias
 */
 typedef struct {
-  char     asciiOfSource [20];
-  Entity   entt;
-  int      value;
-} SymbTab;
+  char     asciiFonte [20];
+  Entidade   entidade;
+  int      valor;
+} TabSimb;
 
-SymbTab symbTab [100];
+TabSimb Tabsimb [100];
 
 int	indSymb,  
 	indTemp;
 
-int	topTab=0;   // first 50 entries are programmer symbols
-int	topTemp=50; // last  50 entries are temporary
+int	topTab=0;   // first 50 entries are programmer simbolos
+int	topTemp=50; // last  50 entries are Temporario
 
-int searchSymbTab (char *symb){ 
+int buscaTabSimb (char *symb){ 
   int k;
   for (k = 0; k < topTab; k++)
-    if (strcmp(symb,symbTab[k].asciiOfSource) == 0)
+    if (strcmp(symb,TabSimb[k].asciiFonte) == 0)
       return k;
   return topTab;
 };
 
-int insertSymbTab (char *symb, Entity whichEntt) {
-  int existingSym, current, aux;
+int inserirTabSimb (char *symb, Entidade qualEntidade) {
+  int SimbExistente, atual, aux;
   
-  existingSym = searchSymbTab (symb);
-  if (existingSym < topTab) return existingSym;
-  current = topTab;
-  if ((whichEntt == Variable) || (whichEntt == Constant)) {
-     strcpy(symbTab[current].asciiOfSource,symb);
-     symbTab[current].entt = whichEntt;
+  SimbExistente = buscaTabSimb (symb);
+  if (SimbExistente < topTab) return SimbExistente;
+  atual = topTab;
+  if ((qualEntidade == Variavel) || (qualEntidade == Constante)) {
+     strcpy(TabSimb[atual].asciiFonte,symb);
+     TabSimb[atual].entidade = qualEntidade;
      }
   else {
     char * ptMsg = (char *) malloc (80);
-    strcpy(ptMsg,"Unknown entity type: "); 
-    strcat(ptMsg,symb); 
+    strcpy(ptMsg,"Tipo da entidade desconhecida: "); 
+    strcat(ptMsg,symb);
     yyerror (ptMsg);
     };
-  if (whichEntt == Constant)
-     symbTab[current].value = atoi(symb);
-  if (whichEntt == Variable) 
-     symbTab[current].value = 0;  
+  if (qualEntidade == Constante)
+     TabSimb[atual].value = atoi(symb);
+  if (qualEntidade == Variavel) 
+     TabSimb[atual].value = 0;  
   topTab++;
-  return current;
+  return atual;
 };
 int temp () { 
 	char nomeTemporaria[4];
 	int retorno;
         sprintf(nomeTemporaria,"t%d",topTemp-50);
-	strcpy(symbTab[topTemp].asciiOfSource,nomeTemporaria);
-	symbTab[topTemp].entt = Temporary;
+	strcpy(TabSimb[topTemp].asciiFonte,nomeTemporaria);
+	TabSimb[topTemp].entidade = Temporario;
         retorno=topTemp;
 	topTemp++;
 	return (retorno);
 };
-void printSymbTable () {
+void printTabSimble () {
 int i, j, inicio, fimTrecho;
 printf("> Tabela de Simbolos \n");
 inicio=0;
@@ -87,22 +87,22 @@ j=0;
 fimTrecho = topTab-1;// trecho dos símbolos do programa  
 while (j <= 1) {
   for (i=inicio; i <= fimTrecho; i++) { 
-    switch (symbTab[i].entt) {
-      case Variable: printf("> Variable: ");break;
-      case Constant: printf("> Numerical Constant: ");break;
-      case Temporary: printf("> Temporary: ");break;
-      case Function: printf("> Function: ");break;
-      case Procedure: printf("> Procedure: ");break;
+    switch (TabSimb[i].entidade) {
+      case Variavel: printf("> Variavel: ");break;
+      case Constante: printf("> Numerical Constante: ");break;
+      case Temporario: printf("> Temporario: ");break;
+      case Funcao: printf("> Funcao: ");break;
+      case Procedimento: printf("> Procedimento: ");break;
       default: yyerror(msg4);break;
     };
-    printf("%s ", symbTab[i].asciiOfSource);
-    printf("%d \n", symbTab[i].value);
+    printf("%s ", TabSimb[i].asciiFonte);
+    printf("%d \n", TabSimb[i].value);
     };// do for
   j++;
   inicio = 50;
   fimTrecho=topTemp-1;  // trecho das temporárias
 }; // do while
-}; // da function printSymbTable
+}; // da Funcao printTabSimble
 
 typedef enum {
 ADD,
@@ -144,9 +144,9 @@ void imprimeQuadrupla(){
 }; //da funcao imprimeQuadrupla
 
 void finaliza () {
-  printSymbTable ();
+  printTabSimble ();
   imprimeQuadrupla ();
-  printf("End normal compilation! \n");
+  printf("Fim normal de compilação! \n");
   exit(0);
   };
 
@@ -168,9 +168,9 @@ int main()
   return 0;
 };
 %}
-%union{
+union{
   struct T{
-    char symbol[21]; 
+    char simbolo[21]; 
     int intval;}t;
  }
 %token _ATRIB _EOF _ABREPAR _FECHAPAR _PTVIRG
@@ -188,7 +188,7 @@ S    : Stm _PTVIRG S
 		    }
      ;
 Stm  : _V _ATRIB E {
-                   $1.intval = insertSymbTab($1.symbol, Variable);
+                   $1.intval = inserirTabSimb($1.simbolo, Variavel);
 		   gera(STO,$3.intval,$1.intval,NADA);
 		   printf("\n");
 		   }
@@ -215,10 +215,10 @@ T    : T _MULT F {
 F     : _ABREPAR E _FECHAPAR 
                  {
 		 $$.intval = $2.intval;} 
-F    : _V {$$.intval=insertSymbTab($1.symbol, Variable);
+F    : _V {$$.intval=inserirTabSimb($1.simbolo, Variavel);
           }
 
-     | _N {$$.intval=insertSymbTab($1.symbol, Constant);
+     | _N {$$.intval=inserirTabSimb($1.simbolo, Constante);
           } 
      ;
 %%
